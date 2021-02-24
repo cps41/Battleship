@@ -10,9 +10,9 @@
     <h1 id="header">Welcome to Battleship</h1>
     <h2 id="header2">Enter Player 1</h1>
     <form id="theForm" onsubmit="return false">
-        <p class="form">
-            Name: <input type="text" id="name1" required="required" placeholder="Enter Name" />
-        </p>
+        <label class="form" for="name">
+            Name: <input type="text" id="name" required="required" placeholder="Enter Name"/>
+        </label>
         <div>
             <p>Please enter your ship placements. You have an aircraft carrier (5 spaces long),
             a battleship (4 spaces long), and a submarine (3 spaces long). These will be placed upon
@@ -25,13 +25,13 @@
                 <li>B(B6-E6);S(H3-J3);A(A1-A5)</li>
             </ul>
             <div id=ship_placement></div>
-                <p class="form">
-                    Ship Placement: <input type="text" id="placement1" required="required" placeholder="A:A1-A5; B:B6-E6; S:H3-J3" size="30" />
-                </p>
+                <label class="form" for="placement">
+                    Ship Placement: <input type="text" id="placement" required="required" placeholder="A:A1-A5; B:B6-E6; S:H3-J3" size="30" />
+                </label>
         </div>
         <br>
         <div>
-            <input type="submit" id="submit" value="Submit"/>
+            <input type="submit" id="submit" class="form" value="Submit"/>
         </div>
     </form>
 </body>
