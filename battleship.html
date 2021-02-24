@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battleship</title>
+    <script type="text/javascript" src="main.js"></script>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body id="bod">
+    <h1 id="header">Welcome to Battleship</h1>
+    <h2 id="header2">Enter Player 1</h2>
+    <form id="theForm" onsubmit="return false">
+        <label class="form" for="name">
+            Name: <input type="text" id="name" required="required" placeholder="Enter Name"/>
+        </label>
+        
+            
+        <div id="instr">
+            <ul>
+                <p>Please enter your ship placements. You have an aircraft carrier (5 spaces long),
+                    a battleship (4 spaces long), and a submarine (3 spaces long). These will be placed upon
+                    a 10x10 grid with values A-J and 0-9. Enter "A", "B", or "S" followed by a range of grid spaces
+                    for your aircraft, battleship, and submarine respectivley. Place a semicolon between ship placements.
+                </p>
+                <b>Valid entry formats include:</b>
+                <li>A:A1-A5;B:B6-E6; S:H3-J3</li>
+                <li>A(A1-A5); B(B6-E6); S(H3-J3)</li>
+                <li>B(B6-E6);S(H3-J3);A(A1-A5)</li>
+            </ul>
+            <img src="grid.jpg"></a>
+            <div id=ship_placement></div>
+            <div></div>
+            <label class="form" for="placement">
+                Ship Placement: <input type="text" id="placement" required="required" placeholder="A:A1-A5; B:B6-E6; S:H3-J3" size="30" />
+            </label>
+            <div>
+                <input type="submit" id="submit" class="form" value="Submit"/>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

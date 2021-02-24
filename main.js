@@ -19,9 +19,15 @@ class Player {
         this.aircraft = aircraft;
         this.battleship = battleship;
         this.submarine = submarine;
+        this.all = aircraft.concat(battleship).concat(submarine);
         this.score = 24;
         this.s = "aircraft: " + aircraft + ", \nbattleship: " + battleship + ", \nsubmarine: " + submarine;
         this.spaces = createSpaces(this);
+        this.sunk = [false, false, false];
+    }
+    toString() {
+        console.log(this.spaces);
+        return "aircraft: " + this.aircraft + ", \nbattleship: " + this.battleship + ", \nsubmarine: " + this.submarine+'\nspaces: ';
     }
 }
 
@@ -50,29 +56,10 @@ class Space {
         spaces(Array(Space)): array of Space objects
 */
 function createSpaces(player) {
-    console.log(player.s);
     const spaces = new Array(100);
-    for(const spot of player.aircraft) {
-        let row = spot.slice(1);
-        console.log(`row: ${row}`);
-        let col = spot.charCodeAt(0)%65;
-        console.log(`col: ${col}`);
-        let index = (row-1)*10+col;
-        console.log(`index: ${index}`);
-        spaces[index] = new Space("A");
-    }
-    for(const spot of player.battleship) {
-        let row = spot.slice(1);
-        let col = spot.charCodeAt(0)%65;
-        let index = (row-1)*10+col;
-        spaces[index] = new Space("B");
-    }
-    for(const spot of player.submarine) {
-        let row = spot.slice(1);
-        let col = spot.charCodeAt(0)%65;
-        let index = (row-1)*10+col;
-        spaces[index] = new Space("S");
-    }
+    for(const spot of player.aircraft) spaces[spot] = new Space("A");
+    for(const spot of player.battleship) spaces[spot] = new Space("B");
+    for(const spot of player.submarine) spaces[spot] = new Space("S");
 
     for(let i=0; i<100; i++) {
         if(spaces[i] == null) spaces[i] = new Space("");
@@ -94,13 +81,13 @@ function getInfo() {
     cleanUpErrors();
     let semicolons = placement.split(';');
     if(semicolons.length != 3) createError("ship_placement", "Incorrect number of entries (must place ; only before new entries)", "invalid_num_entries");
-    placement = placement.replaceAll('\s', ''); // remove whitespace
+    placement = placement.replaceAll(' ', ''); // remove whitespace
+    console.log(placement);
 
     const par = '\\([A-J](10|[1-9](?!0))\\-[A-J](10|[1-9](?=\\)))\\)';
     const colon = '(\\:[A-J]([1-9]|10)\\-[A-J]([1-9](?!0)|10))';
 
     const reA = new RegExp('A('+par+'|'+colon+')');
-    console.log(reA);
     const reB = new RegExp('B('+par+'|'+colon+')');
     const reS = new RegExp('S('+par+'|'+colon+')');
     let valid = false;
@@ -196,7 +183,7 @@ function splitPlacement(placement) {
     @params:
         placement(String): string describing the ship's placement
     @return:
-        Array: new array of the letters and numbers corresponding to the ship's placement
+        Array: new array of the indices of the placement on a 10x10 grid
 */
 function placementRangeArr(placement_arr) {
     const L1 = placement_arr[0];
@@ -205,14 +192,28 @@ function placementRangeArr(placement_arr) {
     const N2 = placement_arr[3];
     const placement_range_arr = new Array();
 
+    console.log(placement_arr);
     if(L1 == L2) {
         for(let i=N1; i<=N2; i++) {
-            let input = String.fromCharCode(L1)+i;
-            placement_range_arr.push(input);
+            let row = i;
+            console.log(`row: ${row}`);
+            let col = L1%65;
+            console.log(`col: ${col}`);
+            let index = (row-1)*10+col;
+            console.log(`index: ${index}`);
+            placement_range_arr.push(index);
         }
     }
     else {
-        for(let i=L1; i<=L2; i++) placement_range_arr.push(String.fromCharCode(i)+N1);
+        for(let i=L1; i<=L2; i++){
+            let row = N1;
+            console.log(`row: ${row}`);
+            let col = i%65;
+            console.log(`col: ${col}`);
+            let index = (row-1)*10+col;
+            console.log(`index: ${index}`);
+            placement_range_arr.push(index);
+        }
     }
 
     return placement_range_arr;
@@ -299,8 +300,115 @@ function nextPlayer(name, A_range, B_range, S_range) {
     bod.appendChild(form);
 }
 
+function checkForSink(ship) {
+    let sunk = true;
+    switch(ship) {
+        case 0:
+            for(let s of opp.aircraft) {
+                if(!opp.spaces[s].fired_at) {
+                    sunk = false;
+                    break;
+                }
+            }
+            if(sunk) {
+                opp.sunk[0] = true;
+                createError("bod", "You successfully sunk your opponent's aircraft!", "aircraft_sunk");
+                
+            }
+            break;
+        case 1:
+            for(let s of opp.battleship) {
+                if(!opp.spaces[s].fired_at) {
+                    sunk = false;
+                    break;
+                }
+            }
+            if(sunk) {
+                opp.sunk[1] = true;
+                createError("bod", "You successfully sunk your opponent's battleship!", "battleship_sunk");
+                break;
+            }
+            break;
+        case 2:
+            for(let s of opp.submarine) {
+                if(!opp.spaces[s].fired_at) {
+                    sunk = false;
+                    break;
+                }
+            }
+            if(sunk) {
+                opp.sunk[2] = true;
+                createError("bod", "You successfully sunk your opponent's submarine!", "submarine_sunk");
+            }
+            break;
+    }
+    
+    let winb = true;
+    for(let sunk of opp.sunk) if(!sunk) winb = false;
+    if(winb) win();
+}
+
 function fire(i) {
-    for
+    opp.spaces[i].fired_at = true;
+
+    if(opp.aircraft.includes(i)) {
+        cur.spaces[i].hit = true;
+        opp.score = opp.score - 2;
+        const grid_spot = document.getElementById(i);
+        grid_spot.className = "grid_hit";
+        checkForSink(0);
+    }
+    else if(opp.battleship.includes(i)) {
+        cur.spaces[i].hit = true;
+        opp.score = opp.score - 2;
+        const grid_spot = document.getElementById(i);
+        grid_spot.className = "grid_hit";
+        checkForSink(1);
+    }
+    else if(opp.submarine.includes(i)) {
+        cur.spaces[i].hit = true;
+        opp.score = opp.score - 2;
+        const grid_spot = document.getElementById(i);
+        grid_spot.className = "grid_hit";
+        checkForSink(2);
+    }
+    else {
+        cur.spaces[i].miss = true;
+        const grid_spot = document.getElementById(i);
+        grid_spot.className = "grid_miss";
+    }
+    const grid_ol = document.createElement("div");
+    grid_ol.setAttribute("class", "board");
+    grid_ol.id = "ol";
+    for(let j=0; j<100; j++) {
+        const spot = document.createElement("div");
+        spot.setAttribute("class", "ol_space");
+        if(j == i) {
+            spot.id = "hit";
+            if(cur.spaces[i].hit) spot.textContent = "X";
+            else spot.textContent = "O";
+        }
+        grid_ol.appendChild(spot);
+    }
+    document.getElementById("grids").appendChild(grid_ol);
+
+    const form = document.createElement("form");
+    form.id = "continue";
+    const p = document.createElement("p");
+    p.textContent = `Click OK to begin ${opp.name}'s turn`;
+    form.appendChild(p);
+    const new_div = document.createElement("div");
+    const submit_button = document.createElement("input");
+    submit_button.setAttribute("type", "submit");
+    submit_button.setAttribute("class", "form");
+    submit_button.id = "submit";
+    submit_button.value = "OK";
+    submit_button.addEventListener("click", nextPlayer);
+
+    new_div.appendChild(document.createElement("br"));
+    new_div.appendChild(submit_button);
+    form.appendChild(new_div);
+    bod.appendChild(form);
 }
 
 /* Method to present errors to the user.
@@ -319,8 +427,8 @@ function createError(id, text, new_id) {
 }
 
 /* Method to clean up errors upon a new submission*/
-function cleanUpErrors(id) {
-    for(id of error_array) {
+function cleanUpErrors() {
+    for(const id of error_array) {
         document.getElementById(id).remove();
     }
     error_array = new Array();
@@ -332,9 +440,13 @@ function setup() {
 
 function nextTurn() {
     document.body.textContent = "";
+    console.log(`cur: ${cur.toString()}`);
+    console.log(`opp: ${opp.toString()}`);
 
     const header = document.createElement("h1");
     header.textContent = `${cur.name}'s Turn`;
+    const header2 = document.createElement("h2");
+    header2.textContent = `Tap a square on the opponent's grid to fire.`;
     const grids = document.createElement("div");
     grids.id = "grids";
 
@@ -365,40 +477,89 @@ function nextTurn() {
     grids.appendChild(letters2);
     grids.appendChild(nums2);
     grids.appendChild(generateOpponentsGrid(cur));
+    const pgrid = document.createElement("div");
+    pgrid.textContent = "Player's Grid";
+    pgrid.id = "pgrid";
+    const ogrid = document.createElement("div");
+    ogrid.textContent = "Opponent's Grid";
+    ogrid.id = "ogrid";
+    grids.appendChild(pgrid);
+    grids.appendChild(ogrid);
 
     document.body.appendChild(header);
+    document.body.appendChild(header2);
     document.body.appendChild(grids);
 }
 
-function generatePlayersGrid(player) {
+function generatePlayersGrid() {
     const grid = document.createElement("div");
     grid.setAttribute("class", "board");
     grid.id = "p";
-    for(const space of player.spaces) {
+    for(let i=0; i<100; i++) {
         const spot = document.createElement("div");
-        spot.setAttribute("class", "grid_space");
-        spot.textContent = space.ship;
-        if(spot.fired_at) spot.setAttribute("class", "player_grid_hit");
+        spot.textContent = cur.spaces[i].ship;
+        if(opp.spaces[i].hit) spot.setAttribute("class", "grid_hit");
+        else if(opp.spaces[i].miss) spot.setAttribute("class", "grid_miss");
+        else spot.setAttribute("class", "grid_space");
         grid.appendChild(spot);
     }
     return grid;
 }
 
-function generateOpponentsGrid(player) {
+function generateOpponentsGrid() {
     const grid = document.createElement("div");
     grid.setAttribute("class", "board");
-    grid.id = "o";
+    grid.id = 'o';
     for(let i=0; i<100; i++) {
         const spot = document.createElement("div");
         spot.id = i;
         spot.setAttribute("class", "grid_space");
-        if(player.spaces[i].hit) spot.setAttribute("background-color", "red");
-        else if(player.spaces[i].miss) spot.setAttribute("background-color", "white");
-        else spot.setAttribute("background-color", "lightblue");
-        // spot.addEventListener("click", function() {fire(i);});
+        if(cur.spaces[i].hit) spot.setAttribute("class", "grid_hit");
+        else if(cur.spaces[i].miss) spot.setAttribute("class", "grid_miss");
+        else spot.addEventListener("click", function() {fire(i);});
         grid.appendChild(spot);
     }
     return grid;
+}
+
+function updateScore() {
+    let min = 24;
+    let minkey = "";
+    if(localStorage.length < 10) localStorage.setItem(cur.name, cur.score);
+    else {
+        for(let i=0; i<10; i++) {
+            console.log(`min: ${min}`);
+            let stored = localStorage.key(i);
+            console.log(`stored: ${stored}`);
+            console.log(`stored val: ${localStorage.getItem(stored)}`);
+            let val = parseInt(localStorage.getItem(stored));
+            if(min > val) {
+                console.log('changing min');
+                min = val;
+                minkey = stored;
+            }
+        }
+
+        if(min <= cur.score) {
+            if(localStorage.getItem(cur.name) != null && localStorage.getItem(cur.name) < cur.score) localStorage.setItem(cur.name, cur.score);
+            else if(localStorage.getItem(cur.name) == null) {
+                localStorage.removeItem(minkey);
+                localStorage.setItem(cur.name, cur.score);
+            }
+        }
+    }
+}
+
+function win() {
+    updateScore();
+    document.body.textContent = "";
+    const header = document.createElement("h1");
+    header.id = "winner";
+    header.textContent = `Congratulations ${cur.name}! You Won!`;
+    const header3 = document.createElement("h3");
+    header3.textContent = `Refresh browser to play again.`;
+    document.body.appendChild(header);
+    document.body.appendChild(header3);
 }
 
 window.addEventListener("load", setup);

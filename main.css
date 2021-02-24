@@ -31,14 +31,11 @@ input {
 }
 
 #submit {
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%);
+    align-self: center;
 }
 
 #continue {
-    margin: auto;
-    margin-top: 50%;
+    text-align: center;
 }
 
 .board {
@@ -58,8 +55,25 @@ input {
     font-weight: bolder;
 }
 
-.player_grid_hit {
+.ol_space {
+    border-width: 2px;
+    text-align: center;
+    color:rgb(0, 0, 0);
+    font-weight: bolder;
+}
+
+.grid_hit {
     background-color: lightcoral;
+    border-style:groove;
+    border-color: black;
+    border-width: 2px;
+    text-align: center;
+    color:rgb(0, 0, 0);
+    font-weight: bolder;
+}
+
+.grid_miss {
+    background-color: white;
     border-style:groove;
     border-color: black;
     border-width: 2px;
@@ -71,12 +85,10 @@ input {
 #grids {
     display: grid;
     grid-template-columns: 1fr 20fr 1fr 1fr 20fr;
-    grid-template-rows: 0.01fr 1fr;
+    grid-template-rows: 0.01fr 1fr 0.01fr;
     grid-template-areas: 
         ". l1 . l2"
         "n1 p n2 o";
-    height: 90%;
-    width: 90%;
 }
 
 #l1 {
@@ -113,4 +125,37 @@ input {
 
 #o {
     grid-area: 2/5/3/6;
+    z-index: 2;
+}
+
+#ol {
+    grid-area: 2/5/3/6;
+    z-index: 3;
+}
+
+#hit {
+    z-index: 3;
+}
+
+img {
+    width:auto;
+    height: auto;
+    align-self: center;
+}
+
+#pgrid {
+    text-align: center;
+    grid-area: 3/2/4/3;
+}
+
+#ogrid {
+    text-align: center;
+    grid-area: 3/5/4/6;
+}
+
+#instr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr .1fr .1fr;
+    gap: 10px;
 }
